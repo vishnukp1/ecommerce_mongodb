@@ -4,20 +4,20 @@ const UserSchema = new mongoose.Schema({
  
   name:{
    type:String,
-   require:false
+   require:true
   },
 username:{
     type:String,
-    required:false,
-    unique:false
+    required:true,
+    unique:true
 },
 password:{
     type:String,
-    required:false
+    required:true
 },
 email:{
     type:String,
-    required:false
+    required:true
 },
 cart: [ 
     {

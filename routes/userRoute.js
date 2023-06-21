@@ -1,33 +1,39 @@
-const { updateUser, deleteUser, getUserById, getAllUsers, createUser, Userlogin, addToWishlist, addToCart, getWishlistByUserId,
-    getCartByUserId,deleteFromWishlist } = require("../controller/user");
-const express=require("express")
+const {
+ 
+  userRegister,
+  userlogin,
+  addToWishlist,
+  addToCart,
+  getWishlistByUserId,
+  getCartByUserId,
+  deleteFromWishlist,
+
+} = require("../controller/user");
+const userVerify=require("../middleware/userAuth")
+const { getProductsByCategory ,getAllProducts,getProductById,} = require("../controller/product");
+
+const express = require("express");
+
 const router = express.Router();
 
-// Create a new user
-router.post('/users', createUser);
+router.post("/api/users/login", userlogin);
 
-// Get all users
-router.get('/users',getAllUsers )
+router.post("/api/users/register", userRegister);
 
-// Get user by ID
-router.get('/users/:id',getUserById );
-// User login
-router.post('/login',Userlogin );
-// Delete user by ID
-router.delete('/users/:id',deleteUser);
+router.get("/api/users/products",userVerify, getAllProducts);
 
-// Update user by ID
-router.put('/users/:id',updateUser);
+router.get("/api/users/products/:id",userVerify, getProductById);
 
-// Add Product to Cart
-router.post('/users/:id/cart', addToCart);
+router.get("/api/products/category/:category",userVerify, getProductsByCategory);
 
-router.get('/users/:id/cart',  getCartByUserId);
-// Add Product to Wishlist
-router.post('/users/:id/wishlist', addToWishlist);
+router.get("/api/users/:id/cart",userVerify, getCartByUserId);
 
-router.get('/users/:id/wishlist', getWishlistByUserId);
+router.post("/api/users/:id/cart",userVerify, addToCart);
 
-router.delete('/users/:id/wishlist', deleteFromWishlist);
+router.post("/api/users/:id/wishlists",userVerify, addToWishlist);
+
+router.get("/api/users/:id/wishlists",userVerify, getWishlistByUserId);
+
+router.delete("/api/users/:id/wishlists",userVerify, deleteFromWishlist);
 
 module.exports = router;
