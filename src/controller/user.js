@@ -3,8 +3,11 @@ const Productschema = require("../models/Productschema");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const User = require("../models/Userschema");
-
+require('dotenv').config();
 const stripe = require("stripe")(process.env.SECRET_KEY)
+
+console.log(process.env.SECRET_KEY);
+
 
 const userRegister = async (req,res) => {
   try{
@@ -182,8 +185,12 @@ const deleteFromWishlist = async (req, res) => {
 
 
 
-const payment = async (req, res) => {
 
+
+
+
+
+const payment = async (req, res) => {
   try {
     const userId = req.params.id;
     const user = await User.findById(userId).populate("cart");
@@ -250,6 +257,8 @@ const payment = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+
 
 module.exports = {
   userRegister,

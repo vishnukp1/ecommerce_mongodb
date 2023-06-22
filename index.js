@@ -16,6 +16,8 @@ mongoose
   .catch((err) => {
     console.log(err);
   });
+
+  console.log(process.env.port1);
   app.use('/', userRouter);
 
   app.use("/", adminRouter);

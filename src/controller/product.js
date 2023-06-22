@@ -1,7 +1,6 @@
 const Productschema = require("../models/Productschema");
 const Userschema = require("../models/Userschema");
 
-
 const createProduct = async (req, res) => {
   try {
     const newProduct = await Productschema.create(req.body);
