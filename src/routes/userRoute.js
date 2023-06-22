@@ -10,8 +10,8 @@ const {
   payment
 
 } = require("../controller/user");
-const userVerify=require("../../middleware/userAuth")
-const { getProductsByCategory ,getAllProducts,getProductById,} = require("../../../controller/product");
+const userVerify=require("../middleware/userAuth")
+const { getProductsByCategory ,getAllProducts,getProductById,} = require("../controller/product");
 
 const express = require("express");
 
@@ -38,6 +38,6 @@ router.get("/api/users/:id/wishlists",userVerify, getWishlistByUserId);
 router.delete("/api/users/:id/wishlists",userVerify, deleteFromWishlist);
 
 
-router.post("/api/payment/:id", payment);
+router.post("/api/payment/:id",userVerify, payment);
 
 module.exports = router;

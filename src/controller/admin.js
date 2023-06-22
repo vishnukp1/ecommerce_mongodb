@@ -80,10 +80,90 @@ const getUserById = async (req, res) => {
   }
 };
 
+
+// Route to handle the aggregation
+const status= async (req, res) => {
+  try {
+    const result = await Userschema.aggregate([
+      {
+        $project: {
+          _id: 0,
+          totalAmounts: "$orders.totalAmount",
+     
+        }
+      },
+      {
+        $unwind: "$totalAmounts"
+      },
+      {
+        $group: {
+          _id: null,
+          totalAmounts: { $push: "$totalAmounts" },
+          totalRevenue: { $sum: "$totalAmounts" },
+    
+        }
+      }
+    ]);
+
+    const totalAmountsArray = result[0].totalAmounts.length;
+    const totalRevenueGenerated = result[0].totalRevenue;
+    
+    console.log("Total items purchased:", totalAmountsArray);
+    console.log("Total revenue generated:", totalRevenueGenerated);
+  
+
+    res.json({
+      "Total products purchased": totalAmountsArray,
+     "Total revenue generated": totalRevenueGenerated,
+     
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "An error occurred" });
+  }
+};
+
+// Route to handle the aggregation
+const orders = async (req, res) => {
+  try {
+    const result = await Userschema.aggregate([
+      {
+        $project: {
+          _id: 0,
+          orders: "$orders"
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          aggregatedOrders: { $push: "$orders" }
+        }
+      }
+    ]);
+
+    const aggregatedOrders = result[0].aggregatedOrders;
+
+    // Filter out empty arrays from the aggregatedOrders
+    const filteredOrders = aggregatedOrders.filter(order => order.length > 0);
+
+    console.log("Order details:", filteredOrders);
+
+    res.json({
+      orders: filteredOrders
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "An error occurred" });
+  }
+};
+
+
 module.exports = {
     loginAdmin,
     adminRegister,
     getAllUsers,
-    getUserById
+    getUserById,
+    status,
+    orders
   };
   

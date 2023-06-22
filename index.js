@@ -1,11 +1,9 @@
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
-const userRouter = require('./routes/userRoute');
-const paymentRouter = require('./controller/payment');
-const adminRouter = require("./routes/adminRoute");
-
-
+const userRouter = require('./src/routes/userRoute');
+const adminRouter = require("./src/routes/adminRoute");
+require('dotenv').config();
 
 app.use(express.json())
 mongoose
@@ -19,8 +17,7 @@ mongoose
     console.log(err);
   });
   app.use('/', userRouter);
-  
-  app.use("/",paymentRouter);
+
   app.use("/", adminRouter);
 
 app.listen(3002, () => {

@@ -4,9 +4,9 @@ const {createProduct,
     getProductById,
     deleteProduct,
     updateProduct,
-    getProductsByCategory, }=require("../../../controller/product")
+    getProductsByCategory, }=require("../controller/product")
 
-    const adminVerify=require("../../middleware/adminAuth")
+    const adminVerify=require("../middleware/adminAuth")
 const router = express.Router()
 
 const {loginAdmin,adminRegister,getAllUsers,
