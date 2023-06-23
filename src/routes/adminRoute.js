@@ -1,38 +1,50 @@
-const express = require("express")
-const {createProduct,
-    getAllProducts,
-    getProductById,
-    deleteProduct,
-    updateProduct,
-    getProductsByCategory, }=require("../controller/product")
+const express = require("express");
+const {
+  createProduct,
+  getAllProducts,
+  getProductById,
+  deleteProduct,
+  updateProduct,
+  getProductsByCategory,
+} = require("../controller/product");
 
-    const adminVerify=require("../middleware/adminAuth")
-const router = express.Router()
+const adminVerify = require("../middleware/adminAuth");
+const router = express.Router();
 
-const {loginAdmin,adminRegister,getAllUsers,
-    getUserById, status, orders} = require("../controller/admin")
+const {
+  loginAdmin,
 
-router.post("/api/admin/register",adminRegister);
+  getAllUsers,
+  getUserById,
+  status,
+  orders,
+} = require("../controller/admin");
 
-router.post("/api/admin/login",loginAdmin)
+const trycatch = require("../middleware/trycatchp");
 
-router.post("/api/admin/products",adminVerify, createProduct);
+router.post("/api/admin/login", loginAdmin);
 
-router.get("/api/admin/products",adminVerify, getAllProducts);
+router.post("/api/admin/products", adminVerify, trycatch(createProduct));
 
-router.put("/api/admin/products/:id",adminVerify, updateProduct);
+router.get("/api/admin/products", adminVerify, trycatch(getAllProducts));
 
-router.delete("/api/admin/products/:id",adminVerify, deleteProduct);
+router.put("/api/admin/products/:id", adminVerify, trycatch(updateProduct));
 
-router.get("/api/admin/products/:id",adminVerify, getProductById);
+router.delete("/api/admin/products/:id", adminVerify, trycatch(deleteProduct));
 
-router.get("/api/admin/products/category/:category",adminVerify, getProductsByCategory);
+router.get("/api/admin/products/:id", adminVerify, trycatch(getProductById));
 
-router.get("/api/admin/users",adminVerify, getAllUsers);
+router.get(
+  "/api/admin/products/category/:category",
+  adminVerify,
+  trycatch(getProductsByCategory)
+);
 
-router.get("/api/admin/users/:id",adminVerify, getUserById);
+router.get("/api/admin/users", adminVerify, trycatch(getAllUsers));
 
-router.get("/api/admin/stats", status)
-router.get("/api/admin/orders", orders)
+router.get("/api/admin/users/:id", adminVerify, trycatch(getUserById));
 
-module.exports = router
+router.get("/api/admin/stats", adminVerify, trycatch(status));
+router.get("/api/admin/orders", adminVerify, trycatch(orders));
+
+module.exports = router;

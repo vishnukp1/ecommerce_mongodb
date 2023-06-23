@@ -1,11 +1,11 @@
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
-const userRouter = require('./src/routes/userRoute');
+const userRouter = require("./src/routes/userRoute");
 const adminRouter = require("./src/routes/adminRoute");
-require('dotenv').config();
+require("dotenv").config();
 
-app.use(express.json())
+app.use(express.json());
 mongoose
   .connect("mongodb://127.0.0.1:27017/letestdb", {
     useNewUrlParser: true,
@@ -17,10 +17,9 @@ mongoose
     console.log(err);
   });
 
-  console.log(process.env.port1);
-  app.use('/', userRouter);
+app.use("/", userRouter);
 
-  app.use("/", adminRouter);
+app.use("/", adminRouter);
 
 app.listen(3002, () => {
   console.log("Server is running on port 3001");
