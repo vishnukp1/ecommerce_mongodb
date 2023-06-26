@@ -33,7 +33,7 @@ router.get(
   "/api/products/category/:category",
   userVerify,
   trycatch(getProductsByCategory)
-);
+); 
 
 router.get("/api/users/:id/cart", userVerify, trycatch(getCartByUserId));
 

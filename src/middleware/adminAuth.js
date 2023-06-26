@@ -8,7 +8,7 @@ const adminVerify = (req, res, next) => {
   }
   let token = authHeader.split(" ").pop();
 
-  jwt.verify(token, "vishnu", (err, decoded) => {
+  jwt.verify(token, "admin", (err, decoded) => {
     if (err) {
       res.status(500).json({ error: "authentication failed" });
     } else {

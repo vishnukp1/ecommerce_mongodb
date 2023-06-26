@@ -8,7 +8,7 @@ const userVerify = (req, res, next) => {
   }
   let token = authHeader.split(" ").pop();
 
-  jwt.verify(token, "vishnu", (err, decoded) => {
+  jwt.verify(token, "user", (err, decoded) => {
     if (err) {
       res.status(500).json({ error: "authentication failed" });
     } else {

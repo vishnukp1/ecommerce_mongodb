@@ -14,12 +14,12 @@ const loginAdmin = async (req, res) => {
   const passwordenv = process.env.adminPassword;
 
   if (username !== usernameenv || password !== passwordenv) {
-    return res.send("Username and password do not match");
-  }
+    return res.send("Username and password do not match"); 
+  }    
 
-  const token = jwt.sign({ username: usernameenv }, "vishnu");
+  const token = jwt.sign({ username: usernameenv }, "admin");
   res.json({
-    status: "Token successfully created",
+    status: "success",
     token: token,
   });
 };

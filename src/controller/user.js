@@ -7,7 +7,6 @@ const { default: Stripe } = require("stripe");
 require("dotenv").config();
 const stripe = require("stripe")(process.env.SECRET_KEY);
 const validate = require("../validation/schemaValidate");
-
 const userRegister = async (req, res) => {
   const { error, value } = validate.userValidate.validate(req.body);
   if (error) {
@@ -24,11 +23,17 @@ const userRegister = async (req, res) => {
     email: email,
   });
 
-  await user.save();
-
-  res.json(user);
-
-  res.json({ message: "user account registered successfully" });
+  try {
+    await user.save();
+    res.json({ message: "User account registered successfully", user });
+  } catch (err) {
+    console.error("An error occurred:", err);
+    res.status(500).json({
+      status: "failure",
+      message: "something went wrong",
+      error_message: err.message,
+    });
+  }
 };
 
 const userlogin = async (req, res) => {
@@ -38,17 +43,27 @@ const userlogin = async (req, res) => {
   }
   const { username, password } = value;
 
-  const user = await Userschema.findOne({ username });
-  if (!user) {
-    res.status(401).json({ error: "Invalid username " });
-  }
-  if (!(await bcrypt.compare(password, user.password))) {
-    res.status(401).json({ error: "Invalid password" });
-  }
-  const token = jwt.sign({ username: user.username }, "vishnu");
+  try {
+    const user = await Userschema.findOne({ username });
+    if (!user) {
+      return res.status(401).json({ error: "Invalid username" });
+    }
+    if (!(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ error: "Invalid password" });
+    }
+    const token = jwt.sign({ username: user.username }, "user");
 
-  res.json({ message: "Login successful", token });
+    res.json({ message: "Login successful", token });
+  } catch (err) {
+    console.error("An error occurred:", err);
+    res.status(500).json({
+      status: "failure",
+      message: "something went wrong",
+      error_message: err.message,
+    });
+  }
 };
+
 
 const addToCart = async (req, res) => {
   const userId = req.params.id;
@@ -99,13 +114,13 @@ const addToWishlist = async (req, res) => {
   user.wishlist.push(product);
   await user.save();
 
-  console.log("Product added to wishlist:", product);
+ 
   res.json({ message: "Product added to wishlist" });
 };
 
 const getWishlistByUserId = async (req, res) => {
   const user = await Userschema.findById(req.params.id).populate("wishlist");
-  console.log(user);
+
   if (user) {
     res.json(user.wishlist);
   } else {
@@ -135,7 +150,7 @@ const deleteFromWishlist = async (req, res) => {
 
   await user.save();
 
-  console.log("Product removed from wishlist:", productId);
+
   res.json({ message: "Product removed from wishlist" });
 };
 
@@ -155,12 +170,15 @@ const payment = async (req, res) => {
       message: "User cart is empty, please add some products",
     });
   }
+  console.log(user.cart);
 
   let totalSum = user.cart.reduce((sum, item) => {
-    sum + item.price;
+   return sum + item.price;
   }, 0);
+  console.log(totalSum);
 
   if (isNaN(totalSum)) {
+
     res.json({
       status: "failure",
       message: "Invalid total sum",

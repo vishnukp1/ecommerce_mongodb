@@ -1,14 +1,15 @@
 const Productschema = require("../models/Productschema");
 
 const createProduct = async (req, res) => {
-  const newProduct = await Productschema.create(req.body);
+  const { title, description, price, image, category } = req.body;
+  const newProduct = await Productschema.create({ title, description, price, image, category });
 
   res.status(201).json({
-    status: "product successfully added",
-    
-    data: item,
-  });;
+    status: "success",
+    data: newProduct,
+  });
 };
+
 
 const getAllProducts = async (req, res) => {
   const Products = await Productschema.find();
