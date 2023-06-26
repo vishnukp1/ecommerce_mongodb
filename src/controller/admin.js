@@ -1,40 +1,41 @@
-const adminschema = require("../models/adminSchema");
-const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Userschema = require("../models/Userschema");
 require("dotenv").config();
+const validate = require("../validation/schemaValidate");
 
 const loginAdmin = async (req, res) => {
-  const usernameenv = process.env.adminUserName;
-  const passwordenv= process.env.adminPassword;
-   const adminUserName = req.body.username;
-  const adminPassword = req.body.password;
-
-  if (usernameenv !== adminUserName || passwordenv !== adminPassword) {
-    return res.send("username and password not match");
+  const { error, value } = validate.adminValidate.validate(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
   }
+
+  const { username, password } = value;
+  const usernameenv = process.env.adminUserName;
+  const passwordenv = process.env.adminPassword;
+
+  if (username !== usernameenv || password !== passwordenv) {
+    return res.send("Username and password do not match");
+  }
+
   const token = jwt.sign({ username: usernameenv }, "vishnu");
   res.json({
-    status: "You successfully token created",
-    token: token
+    status: "Token successfully created",
+    token: token,
   });
 };
 
 const getAllUsers = async (req, res) => {
   const users = await Userschema.find();
-  console.log("All users:", users);
+
   res.json(users);
 };
-
 
 const getUserById = async (req, res) => {
   const user = await Userschema.findById(req.params.id);
 
   if (user) {
-    console.log("user found");
     res.json(user);
   } else {
-    console.log("User not found");
     res.status(404).json({ error: "User not found" });
   }
 };
@@ -61,9 +62,6 @@ const status = async (req, res) => {
 
   const totalAmountsArray = result[0].totalitems.length;
   const totalRevenueGenerated = result[0].totalRevenue;
-
-  console.log("Total items purchased:", totalAmountsArray);
-  console.log("Total revenue generated:", totalRevenueGenerated);
 
   res.json({
     "Total products purchased": totalAmountsArray,

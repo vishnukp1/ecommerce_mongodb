@@ -3,11 +3,17 @@ const Productschema = require("../models/Productschema");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const User = require("../models/Userschema");
+const { default: Stripe } = require("stripe");
 require("dotenv").config();
 const stripe = require("stripe")(process.env.SECRET_KEY);
+const validate = require("../validation/schemaValidate");
 
 const userRegister = async (req, res) => {
-  const { username, password, name, email } = req.body;
+  const { error, value } = validate.userValidate.validate(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+  const { username, password, name, email } = value;
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -26,14 +32,18 @@ const userRegister = async (req, res) => {
 };
 
 const userlogin = async (req, res) => {
-  const { username, password } = req.body;
+  const { error, value } = validate.userValidate.validate(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+  const { username, password } = value;
 
   const user = await Userschema.findOne({ username });
   if (!user) {
-    return res.status(401).json({ error: "Invalid username " });
+    res.status(401).json({ error: "Invalid username " });
   }
   if (!(await bcrypt.compare(password, user.password))) {
-    return res.status(401).json({ error: "Invalid password" });
+    res.status(401).json({ error: "Invalid password" });
   }
   const token = jwt.sign({ username: user.username }, "vishnu");
 
@@ -46,32 +56,27 @@ const addToCart = async (req, res) => {
 
   const user = await Userschema.findById(userId);
   const product = await Productschema.findById(productId);
-  console.log(productId);
-  console.log(product);
 
   if (!user) {
-    return res.status(404).json({ error: "User not found" });
+    res.status(404).json({ error: "User not found" });
   }
 
   if (!product) {
-    return res.status(404).json({ error: "Product not found" });
+    res.status(404).json({ error: "Product not found" });
   }
 
   user.cart.push(product);
   await user.save();
 
-  console.log("Product added to cart:", product);
   res.json({ message: "Product added to cart" });
 };
 
 const getCartByUserId = async (req, res) => {
   const user = await Userschema.findById(req.params.id).populate("cart");
-  console.log(user);
+
   if (user) {
-    console.log("User found:", user);
     res.json(user.cart);
   } else {
-    console.log("User not found");
     res.status(404).json({ error: "User not found" });
   }
 };
@@ -84,11 +89,11 @@ const addToWishlist = async (req, res) => {
   const product = await Productschema.findById(productId);
   console.log(productId);
   if (!user) {
-    return res.status(404).json({ error: "User not found" });
+    res.status(404).json({ error: "User not found" });
   }
 
   if (!product) {
-    return res.status(404).json({ error: "Product not found" });
+    res.status(404).json({ error: "Product not found" });
   }
 
   user.wishlist.push(product);
@@ -102,10 +107,8 @@ const getWishlistByUserId = async (req, res) => {
   const user = await Userschema.findById(req.params.id).populate("wishlist");
   console.log(user);
   if (user) {
-    console.log("User found:", user);
     res.json(user.wishlist);
   } else {
-    console.log("User not found");
     res.status(404).json({ error: "User not found" });
   }
 };
@@ -117,7 +120,7 @@ const deleteFromWishlist = async (req, res) => {
   const user = await Userschema.findById(userId);
 
   if (!user) {
-    return res.status(404).json({ error: "User not found" });
+    res.status(404).json({ error: "User not found" });
   }
 
   const productIndex = user.wishlist.findIndex(
@@ -125,7 +128,7 @@ const deleteFromWishlist = async (req, res) => {
   );
 
   if (productIndex === -1) {
-    return res.status(404).json({ error: "Product not found in wishlist" });
+    res.status(404).json({ error: "Product not found in wishlist" });
   }
 
   user.wishlist.splice(productIndex, 1);
@@ -141,24 +144,24 @@ const payment = async (req, res) => {
   const user = await User.findById(userId).populate("cart");
 
   if (!user) {
-    return res.json({
+    res.json({
       status: "failure",
       message: "Please log in",
     });
   }
 
   if (user.cart.length === 0) {
-    return res.json({
+    res.json({
       message: "User cart is empty, please add some products",
     });
   }
 
   let totalSum = user.cart.reduce((sum, item) => {
-    return sum + item.price;
+    sum + item.price;
   }, 0);
 
   if (isNaN(totalSum)) {
-    return res.json({
+    res.json({
       status: "failure",
       message: "Invalid total sum",
     });
@@ -198,6 +201,7 @@ const payment = async (req, res) => {
     orderId: session.id,
     totalAmount: totalSum,
   });
+  user.cart = [];
   await user.save();
 };
 
