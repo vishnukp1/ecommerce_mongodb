@@ -10,7 +10,6 @@ const createProduct = async (req, res) => {
   });
 };
 
-
 const getAllProducts = async (req, res) => {
   const Products = await Productschema.find();
   res.json({
@@ -18,9 +17,7 @@ const getAllProducts = async (req, res) => {
     
     data: Products,
   });
-  
- 
-};
+}; 
 
 const getProductById = async (req, res) => {
   const Product = await Productschema.findById(req.params.id);
@@ -64,6 +61,8 @@ const getProductsByCategory = async (req, res) => {
     res.status(404).json({ error: "No products found for the category" });
   }
 };
+
+
 
 module.exports = {
   createProduct,

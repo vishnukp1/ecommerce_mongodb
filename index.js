@@ -1,13 +1,22 @@
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
+const cors= require("cors")
+const morgan = require("morgan")
 const userRouter = require("./src/routes/userRoute");
 const adminRouter = require("./src/routes/adminRoute");
 require("dotenv").config();
 
+//vishnutoanother 
+//TJY72CMzB5zAq3ZE 
+app.use(morgan())
+app.use(cors())  
 app.use(express.json());
+// mongodb://127.0.0.1:27017/productCart
+// mongodb+srv://vishnutoanother:TJY72CMzB5zAq3ZE@cluster0.00v8gqd.mongodb.net/
 mongoose
-  .connect("mongodb://127.0.0.1:27017/letestdb", {
+
+  .connect("mongodb://127.0.0.1:27017/productCart", {
     useNewUrlParser: true,
 
     useUnifiedTopology: true,
@@ -24,6 +33,4 @@ app.use("/", adminRouter);
 app.listen(3002, () => {
   console.log("Server is running on port 3001");
 });
-// app.get('/',(req,res) => {
-//   res.send("hii")
-// })
+

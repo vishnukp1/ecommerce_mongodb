@@ -7,8 +7,7 @@ const loginAdmin = async (req, res) => {
   const { error, value } = validate.adminValidate.validate(req.body);
   if (error) {
     return res.status(400).json({ message: error.details[0].message });
-  }
-
+  }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
   const { username, password } = value;
   const usernameenv = process.env.adminUserName;
   const passwordenv = process.env.adminPassword;
@@ -102,3 +101,8 @@ module.exports = {
   status,
   orders,
 };
+
+
+
+
+

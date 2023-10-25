@@ -12,6 +12,7 @@ const adminVerify = (req, res, next) => {
     if (err) {
       res.status(500).json({ error: "authentication failed" });
     } else {
+  
       next();
     }
   });

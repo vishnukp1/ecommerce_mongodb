@@ -16,25 +16,70 @@ const userRegister = async (req, res) => {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const user = new Userschema({
-    username: username,
-    password: hashedPassword,
-    name: name,
-    email: email,
-  });
-
+  
+    const user = new Userschema({
+      username: username,
+      password: hashedPassword,
+      name: name,
+      email: email,
+    })
+   
+   
   try {
     await user.save();
     res.json({ message: "User account registered successfully", user });
   } catch (err) {
-    console.error("An error occurred:", err);
+
     res.status(500).json({
       status: "failure",
       message: "something went wrong",
       error_message: err.message,
     });
+  }  
+};
+
+
+const updateUser = async (req, res) => {
+  const updatedProduct = await Userschema.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true }
+  );
+  if (updatedProduct) {
+    console.log("Product updated:", updatedProduct);
+    res.json(updatedProduct);
+  } else {
+    res.status(404).json({ error: "Product not found" });
   }
 };
+
+
+
+
+
+// Define a route for updating a user
+
+const deleteUser = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Find and remove the user by their username
+    const user = await Userschema.findByIdAndDelete(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ message: "User deleted successfully", user });
+  } catch (err) {
+    res.status(500).json({
+      status: "failure",
+      message: "Something went wrong",
+      error_message: err.message,
+    });
+  }
+};
+
 
 const userlogin = async (req, res) => {
   const { error, value } = validate.userValidate.validate(req.body);
@@ -49,41 +94,73 @@ const userlogin = async (req, res) => {
       return res.status(401).json({ error: "Invalid username" });
     }
     if (!(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ error: "Invalid password" });
+      return res.status(401).json({ error: "Invalid password"});
     }
     const token = jwt.sign({ username: user.username }, "user");
 
-    res.json({ message: "Login successful", token });
+    res.json({ message: "Login successful", token ,id:user._id});
   } catch (err) {
-    console.error("An error occurred:", err);
     res.status(500).json({
-      status: "failure",
+      status: "failure", 
       message: "something went wrong",
       error_message: err.message,
     });
   }
 };
 
-
 const addToCart = async (req, res) => {
-  const userId = req.params.id;
-  const productId = req.body.productId;
+  const userId = req.body.Userid;
+  const productId = req.params.id;
 
+  try {
+    const user = await Userschema.findById(userId);
+    const product = await Productschema.findById(productId);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+
+    if (user.cart.some(cartItem => cartItem._id.equals(product._id))) {
+      return res.status(400).json({ error: "Product already in cart" });
+    }
+
+
+    user.cart.push(product);
+    await user.save();
+
+    return res.status(200).json({ message: "Product added to cart" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const deleteFromCart = async (req, res) => {
+  const userId = req.params.userId;
+  const productId = req.params.id;
+
+  console.log(productId);
   const user = await Userschema.findById(userId);
-  const product = await Productschema.findById(productId);
 
   if (!user) {
     res.status(404).json({ error: "User not found" });
   }
 
-  if (!product) {
-    res.status(404).json({ error: "Product not found" });
+  const productIndex = user.cart.findIndex(
+    (product) => product._id.toString() === productId
+  );
+
+  if (productIndex === -1) {
+    res.status(404).json({ error: "Product not found in wishlist" });
   }
-
-  user.cart.push(product);
+  user.cart.splice(productIndex, 1);
   await user.save();
-
-  res.json({ message: "Product added to cart" });
+  res.json({ message: "Product removed from wishlist" });
 };
 
 const getCartByUserId = async (req, res) => {
@@ -93,16 +170,16 @@ const getCartByUserId = async (req, res) => {
     res.json(user.cart);
   } else {
     res.status(404).json({ error: "User not found" });
-  }
-};
-
+  } 
+}; 
+  
 const addToWishlist = async (req, res) => {
   const userId = req.params.id;
   const productId = req.body.productId;
 
   const user = await Userschema.findById(userId);
   const product = await Productschema.findById(productId);
-  console.log(productId);
+
   if (!user) {
     res.status(404).json({ error: "User not found" });
   }
@@ -122,7 +199,7 @@ const getWishlistByUserId = async (req, res) => {
   const user = await Userschema.findById(req.params.id).populate("wishlist");
 
   if (user) {
-    res.json(user.wishlist);
+  
   } else {
     res.status(404).json({ error: "User not found" });
   }
@@ -145,33 +222,24 @@ const deleteFromWishlist = async (req, res) => {
   if (productIndex === -1) {
     res.status(404).json({ error: "Product not found in wishlist" });
   }
-
   user.wishlist.splice(productIndex, 1);
-
   await user.save();
-
-
   res.json({ message: "Product removed from wishlist" });
 };
-
 const payment = async (req, res) => {
   const userId = req.params.id;
-  const user = await User.findById(userId).populate("cart");
-
+  const user = await Userschema.findById(userId).populate("cart");
   if (!user) {
     res.json({
       status: "failure",
       message: "Please log in",
     });
   }
-
   if (user.cart.length === 0) {
     res.json({
       message: "User cart is empty, please add some products",
     });
   }
-  console.log(user.cart);
-
   let totalSum = user.cart.reduce((sum, item) => {
    return sum + item.price;
   }, 0);
@@ -183,7 +251,7 @@ const payment = async (req, res) => {
       status: "failure",
       message: "Invalid total sum",
     });
-  }
+  } 
 
   let metadata = "Thank you for purchasing from us, see you soon";
   const session = await stripe.checkout.sessions.create({
@@ -232,4 +300,7 @@ module.exports = {
   getWishlistByUserId,
   deleteFromWishlist,
   payment,
+  deleteUser,
+  updateUser,
+  deleteFromCart
 };
